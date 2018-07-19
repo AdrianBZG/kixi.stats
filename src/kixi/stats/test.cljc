@@ -1,6 +1,7 @@
 (ns kixi.stats.test
   (:require [kixi.stats.math :refer [abs sq sqrt lower-regularized-gamma incomplete-beta]]
-            [kixi.stats.data]))
+            [kixi.stats.data]
+            [kixi.stats.distribution :refer [cdf-t]]))
 
 (defn chisq-test
   [^kixi.stats.data.ITable table]
@@ -21,21 +22,13 @@
      :X-sq (double stat)
      :dof dof}))
 
-(defn cdf-t
-  [x dof]
-  (if (zero? x) 0.5
-      (let [t  (incomplete-beta (/ dof (+ (sq x) dof))
-                                (* 0.5 dof)
-                                0.5)]
-        (if (pos? x)
-          (- 1 (* 0.5 t))
-          (* 0.5 t)))))
-
 (defn t-test
   ":paired :one-sided?"
   [{a-mean :mu a-sd :sd a-n :n :as a}
    {b-mean :mu b-sd :sd b-n :n :as b}
-   & [{:keys [paired?] :as opts}]]
+   & [{:keys [paired?]
+       :or {paired? false}
+       :as opts}]]
   (when paired? (assert (= a-n b-n)))
   (let [one-sample? (number? b)
         t (if one-sample?

@@ -1,6 +1,6 @@
 (ns kixi.stats.distribution
   (:refer-clojure :exclude [shuffle rand-int])
-  (:require [kixi.stats.math :refer [abs pow log sqrt exp cos sin PI log-gamma sq floor]]
+  (:require [kixi.stats.math :refer [abs pow log sqrt exp cos sin PI log-gamma incomplete-beta sq floor]]
             [clojure.test.check.random :refer [make-random rand-double rand-long split split-n]]))
 
 (defprotocol IBounded
@@ -225,6 +225,19 @@
                (- rem p) (next-rng rng)
                (rest ks) (rest ps)))
       coll)))
+
+;; Helper functions
+
+(defn cdf-t
+  [x dof]
+  (if (zero? x) 0.5
+      (let [t  (incomplete-beta (/ dof (+ (sq x) dof))
+                                (* 0.5 dof)
+                                0.5)]
+        (if (pos? x)
+          (- 1 (* 0.5 t))
+          (* 0.5 t)))))
+
 
 
 ;;;; Protocol implementations
